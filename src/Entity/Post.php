@@ -3,7 +3,10 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post as LocalPost;
+use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\GetCollection;
 use App\Repository\PostRepository;
 use Doctrine\DBAL\Types\Types;
@@ -14,11 +17,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[ApiResource(
     normalizationContext: ['groups' => ['read:collection']],
+    denormalizationContext: ['groups' => ['write:Post']],
     operations: [
         new GetCollection(),
         new Get(
             normalizationContext: ['groups' => ['read:collection', 'read:item', 'read:Post']]
-        )
+        ),
+        new Put(),
+        new LocalPost(),
+        new Delete()
     ]
 )]
 class Post
@@ -30,15 +37,15 @@ class Post
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:collection'])]
+    #[Groups(['read:collection', 'write:Post'])]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:collection'])]
+    #[Groups(['read:collection', 'write:Post'])]
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['read:item'])]
+    #[Groups(['read:item', 'write:Post'])]
     private ?string $content = null;
 
     #[ORM\Column]
@@ -49,8 +56,14 @@ class Post
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'posts')]
-    #[Groups(['read:Post'])]
+    #[Groups(['read:Post', 'write:Post'])]
     private ?Category $category = null;
+
+    public function __construct() 
+    {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
