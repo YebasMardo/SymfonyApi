@@ -38,14 +38,17 @@ class Post
 
     #[ORM\Column(length: 255)]
     #[Groups(['read:collection', 'write:Post'])]
+    #[Assert\Length(min: 5)]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['read:collection', 'write:Post'])]
+    #[Assert\NotBlank()]
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Groups(['read:item', 'write:Post'])]
+    #[Assert\Length(min: 5, max: 150)]
     private ?string $content = null;
 
     #[ORM\Column]
@@ -55,8 +58,9 @@ class Post
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'posts')]
+    #[ORM\ManyToOne(inversedBy: 'posts', cascade: ['persist'])]
     #[Groups(['read:Post', 'write:Post'])]
+    #[Assert\Valid()]
     private ?Category $category = null;
 
     public function __construct() 
